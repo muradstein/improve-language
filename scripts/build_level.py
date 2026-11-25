@@ -75,7 +75,8 @@ def headword_ipa(cmu, word):
         variants = cmu.variants(token)
         if not variants:
             return None, []
-        best = max(variants, key=lambda v: len(v.replace("ˈ", "").replace("ˌ", "")))  # first on ties
+        # Prefer modern /w/ over old-fashioned /hw/ (whale, while), then the fullest form; first on ties.
+        best = max(variants, key=lambda v: ("hw" not in v, len(v.replace("ˈ", "").replace("ˌ", ""))))
         parts.append(best)
         alternatives += [v for v in variants if v != best]
     return "/" + " ".join(parts) + "/", alternatives
@@ -106,12 +107,20 @@ class Speaker:
         key = f"kokoro:{self.voice}:{text}"
         if mp3.exists() and self.manifest.get(mp3.name) == key:
             return
+        if mp3.exists() and mp3.stat().st_size > 0 and mp3.name not in self.manifest:
+            # Made by a run that was killed before saving the manifest; it was generated
+            # from the current content, so adopt it instead of synthesizing again.
+            self.manifest[mp3.name] = key
+            return
         samples, rate = self.kokoro.create(text, voice=self.voice, speed=1.0, lang="en-us")
         pcm = (samples.clip(-1, 1) * 32767).astype("<i2").tobytes()
         subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-f", "s16le", "-ar", str(rate), "-ac", "1",
                         "-i", "-", "-af", "adelay=150,apad=pad_dur=0.15",
                         "-codec:a", "libmp3lame", "-q:a", "5", str(mp3)], input=pcm, check=True)
         self.manifest[mp3.name] = key
+        self.generated = getattr(self, "generated", 0) + 1
+        if self.generated % 50 == 0:
+            self.save()  # keep progress if the run is interrupted
 
     def save(self):
         MANIFEST.write_text(json.dumps(self.manifest, indent=0, sort_keys=True))
