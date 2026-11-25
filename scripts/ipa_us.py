@@ -74,6 +74,9 @@ def arpabet_to_ipa(phones, spelling=""):
     phones = list(phones)
     syllables = syllabify(phones)
     stresses = [next((p[-1] for p in syl if is_vowel(p)), "0") for syl in syllables]
+    if stresses.count("1") > 1:  # CMUdict sometimes has two: /ˈoʊvɚˈsiz/ -> /ˌoʊvɚˈsiz/
+        last = len(stresses) - 1 - stresses[::-1].index("1")
+        stresses = ["2" if s == "1" and i != last else s for i, s in enumerate(stresses)]
     primary = stresses.index("1") if "1" in stresses else len(syllables)
 
     # Learner dictionaries write an unstressed word-initial a- before the main stress as ə
