@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { db, type Progress } from '../db'
 import { formatInterval, MATURE_STABILITY_DAYS } from '../srs'
-import { POS_AZ, type Word, type WordBase } from '../words'
+import { isPhrase, POS_AZ, type Word, type WordBase } from '../words'
 import { SpeakButton } from './Study'
 
 const MAX_SHOWN = 200
@@ -16,6 +16,7 @@ export default function WordList({ words }: { words: WordBase }) {
   const [query, setQuery] = useState('')
   const [progress, setProgress] = useState<Map<string, Progress>>(new Map())
   const [open, setOpen] = useState<string | null>(null)
+  const [kind, setKind] = useState<'all' | 'words' | 'phrases'>('all')
 
   useEffect(() => {
     db.progress.toArray().then((all) => setProgress(new Map(all.map((p) => [p.wordId, p]))))
@@ -24,9 +25,10 @@ export default function WordList({ words }: { words: WordBase }) {
   const all = useMemo(() => [...words.byId.values()], [words])
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase()
-    if (!q) return all
-    return all.filter((w) => w.word.toLowerCase().includes(q) || w.az.toLowerCase().includes(q))
-  }, [all, query])
+    const ofKind = all.filter((w) => kind === 'all' || (kind === 'phrases') === isPhrase(w))
+    if (!q) return ofKind
+    return ofKind.filter((w) => w.word.toLowerCase().includes(q) || w.az.toLowerCase().includes(q))
+  }, [all, query, kind])
 
   return (
     <div className="stack">
@@ -37,7 +39,20 @@ export default function WordList({ words }: { words: WordBase }) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      <div className="muted small">{matches.length} söz</div>
+      <div className="filter-row">
+        {(
+          [
+            ['all', 'Hamısı'],
+            ['words', 'Sözlər'],
+            ['phrases', 'İfadələr'],
+          ] as const
+        ).map(([k, label]) => (
+          <button key={k} className={kind === k ? 'active' : ''} onClick={() => setKind(k)}>
+            {label}
+          </button>
+        ))}
+      </div>
+      <div className="muted small">{matches.length} nəticə</div>
       <ul className="word-list">
         {matches.slice(0, MAX_SHOWN).map((w) => (
           <WordRow key={w.id} w={w} p={progress.get(w.id)} open={open === w.id} onToggle={() => setOpen(open === w.id ? null : w.id)} />
@@ -71,6 +86,7 @@ function WordRow({ w, p, open, onToggle }: { w: Word; p?: Progress; open: boolea
           </div>
           <div className="ipa small">{w.example_ipa}</div>
           <p className="example-az">{w.example_az}</p>
+          {w.usage && <div className="note usage">💬 {w.usage}</div>}
           {w.note && <div className="note">💡 {w.note}</div>}
           <SpeakButton src={w.audio} label="Sözü dinlə" />
         </div>

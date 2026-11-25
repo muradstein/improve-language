@@ -5,13 +5,15 @@ import { loadWords, type WordBase } from './words'
 import Home from './screens/Home'
 import Study from './screens/Study'
 import WordList from './screens/WordList'
+import Practice from './screens/Practice'
 import SettingsScreen from './screens/Settings'
 
-export type Tab = 'home' | 'study' | 'words' | 'settings'
+export type Tab = 'home' | 'study' | 'practice' | 'words' | 'settings'
 
 const TABS: { id: Tab; icon: string; label: string }[] = [
   { id: 'home', icon: '🏠', label: 'Ana səhifə' },
   { id: 'study', icon: '📚', label: 'Öyrən' },
+  { id: 'practice', icon: '✍️', label: 'Məşq' },
   { id: 'words', icon: '🔎', label: 'Sözlər' },
   { id: 'settings', icon: '⚙️', label: 'Ayarlar' },
 ]
@@ -41,6 +43,7 @@ export default function App() {
       <main className="content">
         {tab === 'home' && <Home words={words} settings={settings} onStart={() => setTab('study')} />}
         {tab === 'study' && <Study words={words} settings={settings} onDone={() => setTab('home')} />}
+        {tab === 'practice' && <Practice words={words} />}
         {tab === 'words' && <WordList words={words} />}
         {tab === 'settings' && <SettingsScreen words={words} settings={settings} onChange={reloadSettings} />}
       </main>

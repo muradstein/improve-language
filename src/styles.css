@@ -429,3 +429,134 @@ button.wide {
   display: flex;
   gap: 8px;
 }
+
+/* ---------- practice ---------- */
+button.link {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--accent);
+}
+.block {
+  display: block;
+}
+.mode-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  width: 100%;
+}
+.primary-card {
+  border-color: var(--accent);
+}
+.mode-icon {
+  font-size: 1.8rem;
+}
+.practice-card {
+  min-height: auto;
+  cursor: default;
+  user-select: auto;
+  gap: 12px;
+}
+.prompt {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+.prompt.sentence {
+  font-weight: 400;
+  line-height: 1.8;
+}
+.blank {
+  display: inline-block;
+  min-width: 3em;
+  border-bottom: 2px solid var(--accent);
+  color: var(--muted);
+  margin-right: 0.3em;
+}
+.blank.filled {
+  color: var(--good);
+  font-weight: 700;
+}
+.build-answer {
+  min-height: 56px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 8px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+}
+.tile-bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tile {
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 1.05rem;
+}
+.tile:disabled {
+  opacity: 0.25;
+}
+.tile.picked {
+  background: var(--seen);
+  border-color: transparent;
+}
+.build-answer.locked .tile.picked {
+  opacity: 1;
+}
+.type-form {
+  display: flex;
+  gap: 8px;
+}
+.answer-input {
+  resize: vertical;
+  font: inherit;
+}
+.listen-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.speak.big {
+  width: 64px;
+  height: 64px;
+  font-size: 1.8rem;
+}
+.feedback-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.feedback.ok .feedback-title {
+  color: var(--good);
+}
+.feedback.bad .feedback-title {
+  color: var(--again);
+}
+.diff {
+  line-height: 1.8;
+}
+.d-missing {
+  color: var(--good);
+  font-weight: 700;
+  text-decoration: underline;
+}
+.d-extra {
+  color: var(--again);
+  text-decoration: line-through;
+}
+.usage {
+  background: rgba(37, 99, 235, 0.12);
+}
+.filter-row {
+  display: flex;
+  gap: 8px;
+}
+.filter-row button.active {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: transparent;
+}

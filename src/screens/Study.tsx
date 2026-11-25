@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { play } from '../audio'
 import type { Settings } from '../db'
 import { answer, nextItem, previewIntervals, type Grade, type StudyItem } from '../srs'
-import { POS_AZ, type WordBase } from '../words'
+import { isPhrase, POS_AZ, type WordBase } from '../words'
 
 const BUTTONS: { grade: Grade; label: string; className: string }[] = [
   { grade: 1, label: 'Again', className: 'again' },
@@ -85,7 +85,7 @@ export default function Study({ words, settings, onDone }: { words: WordBase; se
   return (
     <div className="study">
       <div className="study-top muted small">
-        <span>{item.progress ? 'Təkrar' : 'Yeni söz'}</span>
+        <span>{item.progress ? 'Təkrar' : isPhrase(item.word) ? 'Yeni ifadə' : 'Yeni söz'}</span>
         <span>{done} edilib</span>
       </div>
 
@@ -110,6 +110,7 @@ export default function Study({ words, settings, onDone }: { words: WordBase; se
             <div className="az">{w.az}</div>
             <div className="ipa small">{w.example_ipa}</div>
             <p className="example-az">{w.example_az}</p>
+            {w.usage && <div className="note usage">💬 {w.usage}</div>}
             {w.note && <div className="note">💡 {w.note}</div>}
           </div>
         ) : (

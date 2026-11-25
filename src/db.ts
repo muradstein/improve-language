@@ -26,10 +26,19 @@ export interface Setting {
 // ts-fsrs card as returned by the scheduler (FSRS-7 adds fields; we keep everything).
 export type FsrsCard = Record<string, unknown> & { dueAt: Date; state: number; stability: number }
 
+export interface PracticeLog {
+  id?: number
+  at: number
+  mode: string
+  itemId: string
+  correct: boolean
+}
+
 export const db = new Dexie('improve') as Dexie & {
   progress: EntityTable<Progress, 'wordId'>
   reviews: EntityTable<ReviewLog, 'id'>
   settings: EntityTable<Setting, 'key'>
+  practice: EntityTable<PracticeLog, 'id'>
 }
 
 db.version(1).stores({
@@ -37,6 +46,7 @@ db.version(1).stores({
   reviews: '++id, wordId, at, day',
   settings: 'key',
 })
+db.version(2).stores({ practice: '++id, at, itemId' })
 
 /** A study day starts at 04:00 local time, like Anki, so late-night reviews count for "today". */
 export function studyDay(date = new Date()): string {
@@ -84,6 +94,7 @@ export async function exportBackup(): Promise<Blob> {
     progress: await db.progress.toArray(),
     reviews: await db.reviews.toArray(),
     settings: await db.settings.toArray(),
+    practice: await db.practice.toArray(),
   }
   return new Blob([JSON.stringify(data)], { type: 'application/json' })
 }
@@ -96,16 +107,17 @@ export async function importBackup(text: string) {
   if (data?.app !== 'improve' || !Array.isArray(data.progress)) {
     throw new Error('Bu fayl Improve backup-ı deyil.')
   }
-  await db.transaction('rw', db.progress, db.reviews, db.settings, async () => {
-    await Promise.all([db.progress.clear(), db.reviews.clear(), db.settings.clear()])
+  await db.transaction('rw', [db.progress, db.reviews, db.settings, db.practice], async () => {
+    await Promise.all([db.progress.clear(), db.reviews.clear(), db.settings.clear(), db.practice.clear()])
     await db.progress.bulkAdd(data.progress)
     await db.reviews.bulkAdd(data.reviews ?? [])
     await db.settings.bulkAdd(data.settings ?? [])
+    await db.practice.bulkAdd(data.practice ?? [])
   })
 }
 
 export async function resetProgress() {
-  await db.transaction('rw', db.progress, db.reviews, async () => {
-    await Promise.all([db.progress.clear(), db.reviews.clear()])
+  await db.transaction('rw', [db.progress, db.reviews, db.practice], async () => {
+    await Promise.all([db.progress.clear(), db.reviews.clear(), db.practice.clear()])
   })
 }
