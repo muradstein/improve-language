@@ -42,7 +42,7 @@ def phone_ipa(phone):
         return CONSONANTS[phone]
     base, stress = phone[:-1], phone[-1]
     if base == "AH":
-        return "ʌ" if stress == "1" else "ə"
+        return "ʌ" if stress in "12" else "ə"  # AH2 is a full vowel too: /ˌʌndɚˈstænd/
     if base == "ER":
         return "ɝ" if stress == "1" else "ɚ"
     return VOWELS[base]
