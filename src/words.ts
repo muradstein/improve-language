@@ -22,6 +22,27 @@ export interface WordBase {
   byId: Map<string, Word>
 }
 
+/**
+ * Order in which new words are introduced: syllabus words first, then the rest
+ * round-robin by part of speech (verb, noun, adjective, adverb, ...) so each day
+ * brings a mix instead of 70 verbs in a row. Deterministic, so the order is stable.
+ */
+function studyOrder(words: Word[]): Word[] {
+  const syllabus = words.filter((w) => w.syllabus)
+  const groups = new Map<string, Word[]>()
+  for (const w of words) {
+    if (w.syllabus) continue
+    if (!groups.has(w.pos)) groups.set(w.pos, [])
+    groups.get(w.pos)!.push(w)
+  }
+  const queues = [...groups.values()]
+  const mixed: Word[] = []
+  for (let i = 0; mixed.length < words.length - syllabus.length; i++) {
+    for (const q of queues) if (i < q.length) mixed.push(q[i])
+  }
+  return [...syllabus, ...mixed]
+}
+
 /** Loads every level that has been built (public/words/<level>.json); missing levels are skipped. */
 export async function loadWords(): Promise<WordBase> {
   const results = await Promise.allSettled(
@@ -36,7 +57,7 @@ export async function loadWords(): Promise<WordBase> {
   for (const r of results) {
     if (r.status !== 'fulfilled') continue
     const [level, words] = r.value
-    byLevel[level] = words
+    byLevel[level] = studyOrder(words)
     for (const w of words) byId.set(w.id, w)
   }
   return { byLevel, byId }
