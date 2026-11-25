@@ -16,7 +16,16 @@ let cached: { retention: number; scheduler: Scheduler } | null = null
 
 export async function getScheduler(settings: Settings): Promise<Scheduler> {
   if (cached?.retention !== settings.desiredRetention) {
-    const scheduler = await DefaultScheduler({ desiredRetention: settings.desiredRetention, enableFuzz: true })
+    const scheduler = await DefaultScheduler({
+      desiredRetention: settings.desiredRetention,
+      enableFuzz: true,
+      // Anki-style same-day steps: a new word answered Good comes back in 10 minutes
+      // before moving to day intervals; a forgotten word comes back in 10 minutes.
+      enableShortTerm: true,
+      learningSteps: ['1m', '10m'],
+      relearningSteps: ['10m'],
+      allowModelOverride: false,
+    })
     cached = { retention: settings.desiredRetention, scheduler }
   }
   return cached.scheduler
