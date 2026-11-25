@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+data/cache/
+data/voices/*.onnx
+data/voices/*.onnx.json
+build/
+node_modules/
+dist/
+*.tsbuildinfo
+data/voices/*.bin
