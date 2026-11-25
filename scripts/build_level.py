@@ -49,12 +49,18 @@ complex entrance intimate invalid recall abuse abuses advice advise does""".spli
 
 def load_levels():
     """(headword, pos) -> (CEFR level, source). Handles 'realize/realise'."""
-    index = {}
+    index, from_lowercase = {}, set()
     for fname, source in LEVEL_FILES.items():
         with open(SOURCES / fname, encoding="utf-8-sig") as f:
             for row in csv.DictReader(f):
                 for variant in row["headword"].split("/"):
-                    index.setdefault((variant.strip().lower(), row["pos"]), (row["CEFR"], source))
+                    variant = variant.strip()
+                    key = (variant.lower(), row["pos"])
+                    # 'march' (B1, walk) must win over 'March' (A1, month): lowercase headwords take precedence.
+                    if key not in index or (variant.islower() and key not in from_lowercase):
+                        index[key] = (row["CEFR"], source)
+                        if variant.islower():
+                            from_lowercase.add(key)
     return index
 
 
